@@ -27,6 +27,7 @@ services:
       context: greenlight
       dockerfile: Dockerfile
     volumes:
+      - $PWD/greenlight:/usr/src/app
       - $PWD/greenlight-logs:/var/log/greenlight
     environment:
       - PORT=4000
