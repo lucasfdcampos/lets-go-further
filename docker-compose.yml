@@ -1,0 +1,43 @@
+version: "3.9"
+
+networks: 
+  greenlight-net: 
+    external: true
+
+services:
+  db:
+    image: postgres:13
+    container_name: postgres
+    hostname: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: greenlight
+    networks:
+      - greenlight-net
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  greenlight:
+    container_name: greenlight
+    hostname: greenlight
+    build: 
+      context: greenlight
+      dockerfile: Dockerfile
+    volumes:
+      - $PWD/greenlight-logs:/var/log/greenlight
+    environment:
+      - PORT=4000
+      - DATABASE_URL=postgres://postgres:password@db/greenlight?sslmode=disable
+    networks:
+      - greenlight-net
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+  
+volumes:
+  pgdata:
+  greenlight-logs:
