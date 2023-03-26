@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	// Import the pq driver so that it can register itself with the database/sql
@@ -48,10 +49,21 @@ func main() {
 	// Declare an isntance of the config struct.
 	var cfg config
 
+	// Initialize a new logger which writes messages to the standard out stream,
+	// prefixed with the current date and time.
+	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+
+	// Converts the port number to an integer
+	portStr := os.Getenv("PORT")
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	// Read the value of the port and env command-line flags into the config struct. We
 	// default to using the port number 4000 and the environment "development" if no
 	// corresponding flags are provided.
-	flag.IntVar(&cfg.port, "port", 4000, "API server port")
+	flag.IntVar(&cfg.port, "port", port, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 
 	// Read the DSN value from the db-dsn command-line flag into the config struct. We
@@ -59,10 +71,6 @@ func main() {
 	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("DATABASE_URL"), "PostgreSQL DSN")
 
 	flag.Parse()
-
-	// Initialize a new logger which writes messages to the standard out stream,
-	// prefixed with the current date and time.
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	// Call the openDB() helper function (see below) to create the connection pool,
 	// passing in the config struct. If this returns an error, we log it and exit the
