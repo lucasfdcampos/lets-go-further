@@ -74,9 +74,6 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
-
-	// Dump the contents of the input struct in a HTTP response.
-	// fmt.Fprintf(w, "%+v\n", input)
 }
 
 // Add a showMovieHandler for the "GET /v1/movies/:id" endpoint. For now, we retrieve
