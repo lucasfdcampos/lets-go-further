@@ -21,15 +21,19 @@ case "$1" in
         ;;
     migrations-down)
         cd greenlight
-        migrate -database $database -path=$migrations_dir down
+        migrate -database $database -path=$migrations_dir down $2
         ;;
     migrations-version)
         cd greenlight
         migrate -database $database -path=$migrations_dir version
         ;;
+    migrations-goto)
+        cd greenlight
+        migrate -database $database -path=$migrations_dir goto $2
+        ;;
     *)
     
-        echo "Usage: $0 {migration-create <name> | migrations-up}"
+        echo "Usage: $0 {migration-create <name> | migrations-up | migrations-down <version> | migrations-version | migrations-goto <version>}"
         exit 1
         ;;
 esac
