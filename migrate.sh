@@ -23,6 +23,10 @@ case "$1" in
         cd greenlight
         migrate -database $database -path=$migrations_dir down
         ;;
+    migrations-version)
+        cd greenlight
+        migrate -database $database -path=$migrations_dir version
+        ;;
     *)
     
         echo "Usage: $0 {migration-create <name> | migrations-up}"
