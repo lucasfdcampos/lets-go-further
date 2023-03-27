@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/lib/pq"
 	"greenlight.lucasfdcampos.net/internal/validator"
 )
 
@@ -48,8 +49,24 @@ type MovieModel struct {
 }
 
 // Add a placeholder method for inserting a new record in the movies table.
-func (n MovieModel) Insert(movie *Movie) error {
-	return nil
+// The Insert() method accepts a pointer to a movie struct, which should contain the
+// data for the new record.
+func (m MovieModel) Insert(movie *Movie) error {
+	query := `
+		INSERT INTO movies (title, year, runtime, genres)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, created_at, version
+	`
+
+	// Create an args slice containing the values for the placeholder parameters from
+	// the movie struct. Declaring this slice immediately next to our SQL query helps to
+	// make it nice and clear *what values are being used where* in the query.
+	args := []any{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
+
+	// Use the QueryRow() method to execute the SQL query on our connection pool,
+	// passing in the args slice as a variadic parameter and scanning the system-
+	// generated id, created_at and version values into the movie struct.
+	return m.DB.QueryRow(query, args...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
 }
 
 // Add a placeholder method for fetching a specific record from the movies table.
@@ -64,5 +81,27 @@ func (m MovieModel) Update(movie *Movie) error {
 
 // Add a placeholder method for deleting a specific record from the movies table.
 func (m MovieModel) Delete(id int64) error {
+	return nil
+}
+
+type MockMovieModel struct{}
+
+func (m MockMovieModel) Insert(movie *Movie) error {
+	// Mock the action...
+	return nil
+}
+
+func (m MockMovieModel) Get(id int64) (*Movie, error) {
+	// Mock the action...
+	return nil, nil
+}
+
+func (m MockMovieModel) Update(movie *Movie) error {
+	// Mock the action...
+	return nil
+}
+
+func (m MockMovieModel) Delete(id int64) error {
+	// Mock the action...
 	return nil
 }
