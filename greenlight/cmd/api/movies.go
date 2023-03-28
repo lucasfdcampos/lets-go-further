@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"greenlight.lucasfdcampos.net/internal/data"
 	"greenlight.lucasfdcampos.net/internal/validator"
@@ -129,6 +130,15 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	// If the request contains a X-Expected-Version header, verify that the movie
+	// version in the database matches the expected version specified in the header.
+	if r.Header.Get("X-Expected-Version") != "" {
+		if strconv.FormatInt(int64(movie.Version), 32) != r.Header.Get("X-Expected-Version") {
+			app.editConflictResponse(w, r)
+			return
+		}
+	}
+
 	// Declare an input struct to hold the expected data from the client.
 	// Use pointers for the Title, Year and Runtime fields.
 	var input struct {
@@ -180,14 +190,21 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Pass the updated movie record to our new Update() method.
+	// Intercept any ErrEditConflict error and call the new editConflictResponse()
+	// helper.
 	err = app.models.Movies.Update(movie)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 
 	// Write the updated movie record in a JSON response.
-	err = app.writeJSON(w, http.StatusCreated, envelope{"movie": movie}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
