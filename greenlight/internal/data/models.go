@@ -15,13 +15,14 @@ var (
 // Create a Models struct which wraps the MovieModel. We'll add other models to this,
 // like a UserModel and PermissionModel, as our build progresses.
 type Models struct {
-	// Set the Movies field to be an interface containing the methos that both the
+	// Set the Movies field to be an interface containing the methods that both the
 	// 'real' model and mock model need to suport.
 	Movies interface {
 		Insert(movie *Movie) error
 		Get(id int64) (*Movie, error)
 		Update(movie *Movie) error
 		Delete(id int64) error
+		GetAll(title string, genres []string, filters Filters) ([]*Movie, error)
 	}
 }
 
