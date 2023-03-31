@@ -282,7 +282,7 @@ func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request
 	// by the client (which will imply a ascending sort on movie ID).
 	input.Filters.Sort = app.readString(qs, "sort", "id")
 	// Add the supported sort values for this endpoint to the sort safelist.
-	input.Filters.SortSafelist = []string{"id", "title", "year", "runtime", "-id", "-time", "-year", "-runtime"}
+	input.Filters.SortSafelist = []string{"id", "title", "year", "runtime", "-id", "-title", "-year", "-runtime"}
 
 	// Execute the validation checks on the Filters struct and send a response
 	// containing the errors if necessary.
