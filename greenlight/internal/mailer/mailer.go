@@ -3,13 +3,14 @@ package mailer
 import (
 	"bytes"
 	"embed"
+	"fmt"
 	"html/template"
 	"time"
 
 	"github.com/go-mail/mail/v2"
 )
 
-// go:embed "templates"
+//go:embed templates/*
 var templateFS embed.FS
 
 // Define a mailer struct which contains a mail.Dialer instance (used to connect to a
@@ -41,6 +42,7 @@ func (m Mailer) Send(recipient, templateFile string, data any) error {
 	// file system.
 	tmpl, err := template.New("email").ParseFS(templateFS, "templates/"+templateFile)
 	if err != nil {
+		fmt.Println("* * * Error parsing email template")
 		return err
 	}
 
@@ -85,5 +87,6 @@ func (m Mailer) Send(recipient, templateFile string, data any) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

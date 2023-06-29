@@ -10,6 +10,7 @@ import (
 
 	"greenlight.lucasfdcampos.net/internal/data"
 	"greenlight.lucasfdcampos.net/internal/jsonlog"
+	"greenlight.lucasfdcampos.net/internal/mailer"
 
 	// Import the pq driver so that it can register itself with the database/sql
 	// package. Note that we alias this import to the blank identifier, to stop the Go
@@ -50,6 +51,13 @@ type config struct {
 		burst   int
 		enabled bool
 	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
 }
 
 // Define an application struct to hold the dependencies for our HTTP handlers, helpers,
@@ -59,6 +67,7 @@ type application struct {
 	config config
 	logger *jsonlog.Logger
 	models data.Models
+	mailer mailer.Mailer
 }
 
 func main() {
@@ -98,6 +107,16 @@ func main() {
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
 
+	// Read the SMTP server configuration settings into the config struct, using the
+	// Mailtrap settings as the default values. IMPORTANT: If you're following along,
+	// make sure to replace the default values for smtp-username and smtp-password
+	// with your own Mailtrap credentials.
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 2525, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "4def9c15a9185a", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "38cc568b9b84c3", "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@greenlight.lucascampos.ads>", "SMTP sender")
+
 	flag.Parse()
 
 	// Call the openDB() helper function (see below) to create the connection pool,
@@ -128,6 +147,7 @@ func main() {
 		config: cfg,
 		logger: logger,
 		models: data.NewModels(db),
+		mailer: mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 
 	// Call app.serve() to start the server.
