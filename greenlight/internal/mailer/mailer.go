@@ -3,7 +3,6 @@ package mailer
 import (
 	"bytes"
 	"embed"
-	"fmt"
 	"html/template"
 	"time"
 
@@ -42,7 +41,6 @@ func (m Mailer) Send(recipient, templateFile string, data any) error {
 	// file system.
 	tmpl, err := template.New("email").ParseFS(templateFS, "templates/"+templateFile)
 	if err != nil {
-		fmt.Println("* * * Error parsing email template")
 		return err
 	}
 
